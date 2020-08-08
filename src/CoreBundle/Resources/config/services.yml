@@ -3,3 +3,9 @@ services:
     autowire: true
     autoconfigure: true
     public: true
+
+  app.event.entity.listener:
+    class: App\CoreBundle\EventListener\EntitiesListener
+    tags:
+      - { name: doctrine.event_listener, event: prePersist }
+      - { name: doctrine.event_listener, event: preUpdate }

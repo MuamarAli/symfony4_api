@@ -12,7 +12,7 @@ doctrine:
         mappings:
             App:
                 is_bundle: false
-                type: annotation
+                type: yml
                 dir: '%kernel.project_dir%/src/CoreBundle/Entity'
                 prefix: 'App\CoreBundle\Entity'
                 alias: App

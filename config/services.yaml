@@ -26,7 +26,7 @@ services:
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
     App\APIBundle\Controller\:
-        resource: '../src/APIBundle/Controller/'
+        resource: '@APIBundle/Controller/'
         tags: ['controller.service_arguments']
 
     # add more service definitions when explicit configuration is needed

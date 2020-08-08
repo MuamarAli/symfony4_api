@@ -1,3 +1,25 @@
-default:
-  path: default
-  controller: App\APIBundle\Controller\DefaultController::indexAction
+# Article
+article_list:
+  path: articles
+  controller: App\APIBundle\Controller\ArticleController::indexAction
+  methods: GET
+
+article_create:
+  path: articles
+  controller: App\APIBundle\Controller\ArticleController::createAction
+  methods: POST
+
+article_read:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::getAction
+  methods: GET
+
+article_update:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::updateAction
+  methods: PUT
+
+article_delete:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::deleteAction
+  methods: DELETE
