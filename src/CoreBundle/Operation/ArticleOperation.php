@@ -2,8 +2,9 @@
 
 namespace App\CoreBundle\Operation;
 
-use App\CoreBundle\Entity\Article;
-use App\CoreBundle\Utils\{DatabaseUtils, SlugUtils};
+use App\CoreBundle\Entity\{Article, User};
+use App\CoreBundle\Utils\DatabaseUtils;
+use App\CoreBundle\Utils\SlugUtils;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -91,16 +92,39 @@ class ArticleOperation
      *
      * @return ArticleOperation
      */
-//    public function create(): ArticleOperation
-//    {
-//        try {
-//            $this->article->setAuthor($author);
-//        } catch (\Exception $e) {
-//            throw new \Exception('An error occurred at the operation, create article.');
-//        }
-//
-//        return $this;
-//    }
+    public function create(User $author): ArticleOperation
+    {
+        try {
+            $this->article->setAuthor($author);
+        } catch (\Exception $e) {
+            throw new \Exception('An error occurred at the operation, create article.');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Update user data.
+     *
+     * @param string $oldTitle | old title.
+     *
+     * @throws \Exception
+     * @author Ali, Muamar
+     *
+     * @return
+     */
+    public function update(string $oldTitle): ArticleOperation
+    {
+        try {
+            if ($oldTitle != $this->article->getTitle()) {
+                $this->generateSlug();
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('An error occurred at the operation, update user.');
+        }
+
+        return $this;
+    }
 
     /**
      * Retrieve all articles.

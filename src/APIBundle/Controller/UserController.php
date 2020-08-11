@@ -2,36 +2,41 @@
 
 namespace App\APIBundle\Controller;
 
-use App\CoreBundle\Manager\ArticleManager;
+use App\CoreBundle\Manager\UserManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 
 /**
- * Class ArticleController
+ * Class UserController
  *
  * @package App\APIBundle\Controller
  *
  * @author Ali, Muamar
  */
-class ArticleController extends AbstractController
+class UserController extends AbstractController
 {
     /**
-     * @var ArticleManager
+     * Error message in the try catch.
      */
-    private $articleManager;
+    const CATCH_ERROR_MESSAGE = 'Oops! Something went wrong! Please contact our PHP Development Team.';
+
+    /**
+     * @var UserManager
+     */
+    private $userManager;
 
     /**
      * UsersController constructor.
      *
-     * @param ArticleManager $articleManager
+     * @param UserManager $userManager
      */
-    public function __construct(ArticleManager $articleManager)
+    public function __construct(UserManager $userManager)
     {
-        $this->articleManager = $articleManager;
+        $this->userManager = $userManager;
     }
 
     /**
-     * List of Articles.
+     * List of Users.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -42,13 +47,13 @@ class ArticleController extends AbstractController
     {
         try {
             $response = $this->response(
-                $this->articleManager->getAll()
-            );
+                $this->userManager->getAll())
+            ;
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
@@ -58,7 +63,7 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * Create Article.
+     * Create User.
      *
      * @param Request $request | handle the request methods.
      *
@@ -71,17 +76,14 @@ class ArticleController extends AbstractController
     {
         try {
             $response = $this->json(
-                $this->articleManager->create(
-                    $request->getContent(),
-                    $this->getUser()
-                ),
+                $this->userManager->create($request->getContent()),
                 Response::HTTP_CREATED
             );
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -91,26 +93,26 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * Get and display single article.
+     * Get and display single user.
      *
-     * @param string $id | article id.
+     * @param int $id | user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
      * @return Response
      */
-    public function getAction(string $id): Response
+    public function getAction(int $id): Response
     {
         try {
             $response = $this->response(
-                $this->articleManager->getById($id)
+                $this->userManager->getById($id)
             );
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -120,10 +122,10 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * Update the article information.
+     * Update the user information.
      *
      * @param Request $request | handle the request methods.
-     * @param string $id | article slug id.
+     * @param int $id | user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -132,12 +134,11 @@ class ArticleController extends AbstractController
      */
     public function updateAction(
         Request $request,
-        string $id
+        int $id
     ): JsonResponse
     {
         try {
-
-            $updateUser = $this->articleManager->update(
+            $updateUser = $this->userManager->update(
                 $request->getContent(),
                 $id
             );
@@ -150,7 +151,7 @@ class ArticleController extends AbstractController
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -160,26 +161,26 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * Delete an article.
+     * Delete a user.
      *
-     * @param string $id | article slug id.
+     * @param int $id | user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
      * @return JsonResponse
      */
-    public function deleteAction(string $id): JsonResponse
+    public function deleteAction(int $id): JsonResponse
     {
         try {
-            $this->articleManager->delete($id);
+            $this->userManager->delete($id);
 
             $response = $this->json(Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'errors' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );

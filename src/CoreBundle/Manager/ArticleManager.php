@@ -2,16 +2,17 @@
 
 namespace App\CoreBundle\Manager;
 
-use App\CoreBundle\Entity\Article;
+use App\CoreBundle\Entity\{Article, User};
 use App\CoreBundle\Operation\ArticleOperation;
 use App\CoreBundle\Utils\{SerializerUtils, ValidationUtils};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
  * Class ArticleManager
  *
  * @package App\CoreBundle\
  *
- * @author Anima, Renz
+ * @author Ali, Muamar
  */
 class ArticleManager
 {
@@ -52,16 +53,16 @@ class ArticleManager
      * Retrieve all articles.
      *
      * @throws \Exception
-     * @author Anima, Renz
+     * @author Ali, Muamar
      *
-     * @return array|null
+     * @return
      */
-    public function getAll(): ?array
+    public function getAll()
     {
         try {
-            return $this
-                ->articleOperation
-                ->getAll();
+            return $this->serializerUtils->serialize(
+                $this->articleOperation->getAll()
+            );
         } catch (\Exception $e) {
             throw new \Exception('An error occurred at the manager, getting all the articles.');
         }
@@ -72,89 +73,127 @@ class ArticleManager
      *
      * @param string $id | article slug id.
      *
-     * @author Anima, Renz
+     * @throws \Exception
+     * @author Ali, Muamar
      *
-     * @return Article|null
+     * @return
      */
-    public function getById(string $id): ?Article
+    public function getById(string $id)
     {
         try {
-            $article = $this
-                ->articleOperation
-                ->getById($id);
+            if (empty($article = $this->articleOperation->getById($id))) {
+                throw new \Exception ('Article does not exist.');
+            } else {
+                $result = $this->serializerUtils->serialize($article);
+            }
         } catch (\Exception $e) {
-            $article = null;
+            throw new \Exception('An error occurred at the manager, getting article.');
         }
 
-        return $article;
+        return $result;
     }
 
     /**
      * Create article.
      *
-     * @param Article $article | The article data
+     * @param string $content | content.
+     * @param User $author | The user logged in
      *
      * @throws \Exception
-     * @author Anima, Renz
+     * @author Ali, Muamar
      *
-     * @return ArticleOperation
+     * @return
      */
-    public function create(Article $article): ArticleOperation
+    public function create(
+        string $content,
+        User $author
+    )
     {
         try {
-            return $this
-                ->articleOperation
-                ->setArticle($article)
-                ->generateSlug()
-                ->save();
+            $article = $this->serializerUtils->deserialize(
+                $content,
+                Article::class
+            );
+
+            if ($errors = $this->validate($article)) {
+                $result = $errors;
+            } else {
+                $result = $this
+                    ->articleOperation
+                    ->setArticle($article)
+                    ->create($author)
+                    ->generateSlug()
+                    ->save()
+                    ->getArticle();
+            }
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the manager, creation of article.'
             );
         }
+
+        return $result;
     }
 
     /**
      * Update article.
      *
-     * @param Article $article | article entity.
+     * @param string $content | content.
+     * @param int $id | article id.
      *
      * @throws \Exception
-     * @author Anima, Renz
+     * @author Ali, Muamar
      *
-     * @return ArticleOperation
+     * @return
      */
-    public function update(Article $article): ArticleOperation
+    public function update($content, $id)
     {
         try {
-            return $this
-                ->articleOperation
-                ->setArticle($article)
-                ->generateSlug()
-                ->save();
+            $article = $this->getById($id);
+
+            $oldTitle = $article->getTitle();
+
+            $updateArticle = $this->serializerUtils->deserialize(
+                $content,
+                Article::class,
+                [AbstractNormalizer::OBJECT_TO_POPULATE => $article]
+            );
+
+            if ($errors = $this->validate($article)) {
+                $result = $errors;
+            } else {
+                $result = $this
+                    ->articleOperation
+                    ->setArticle($updateArticle)
+                    ->update($oldTitle)
+                    ->save()
+                    ->getArticle();
+            }
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the manager, updating of article.'
             );
         }
+
+        return $result;
     }
 
     /**
      * Delete article.
      *
-     * @param Article $article | article entity.
+     * @param int $id | article id.
      *
      * @throws \Exception
-     * @author Anima, Renz
+     * @author Ali, Muamar
      *
      * @return ArticleOperation
      */
-    public function delete(Article $article): ArticleOperation
+    public function delete($id): ArticleOperation
     {
         try {
             return $this
                 ->articleOperation
-                ->setArticle($article)
+                ->setArticle($this->getById($id))
                 ->delete();
         } catch (\Exception $e) {
             throw new \Exception(
@@ -176,65 +215,12 @@ class ArticleManager
     public function validate($article)
     {
         try {
-            return $this->validatorUtils->validate($article);
+            if ($validate = $this->validatorUtils->validate($article)) {
+                return $validate;
+            }
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the manager, checking validation of article.'
-            );
-        }
-    }
-
-    /**
-     * Serialize content array object into json.
-     *
-     * @param $data | article data.
-     *
-     * @throws \Exception
-     * @author Ali, Muamar
-     *
-     * @return string
-     */
-    public function serialize($data)
-    {
-        try {
-            return $this->serializerUtils->serialize($data);
-        } catch (\Exception $e) {
-            throw new \Exception(
-                'An error occurred at the manager, serializing of article.'
-            );
-        }
-    }
-
-    /**
-     * Deserialize content format into object.
-     *
-     * @param string $content | json content.
-     * @param string $entityClass | entity class name.
-     * @param array $context.
-     *
-     * @throws \Exception
-     * @author Ali, Muamar
-     *
-     * @return array|object
-     */
-    public function deserialize
-    (
-        string $content,
-        string $entityClass,
-        array $context = []
-    )
-    {
-        try {
-            return $this
-                ->serializerUtils
-                ->deserialize(
-                    $content,
-                    $entityClass,
-                    $context
-                );
-        } catch (\Exception $e) {
-            throw new \Exception(
-                'An error occurred at the manager, deserializing of article request content.'
             );
         }
     }

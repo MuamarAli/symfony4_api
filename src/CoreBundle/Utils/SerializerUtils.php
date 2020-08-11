@@ -52,7 +52,11 @@ class SerializerUtils
                 }
             ];
 
-            return $this->serializer->serialize($data, self::RESPONSE_FORMAT, $circular);
+            return $this->serializer->serialize(
+                $data,
+                self::RESPONSE_FORMAT,
+                $circular
+            );
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the serializer utils, serializing of entity.'
@@ -75,7 +79,7 @@ class SerializerUtils
     public function deserialize(
         string $content,
         string $entityClass,
-        array $context
+        array $context = []
     )
     {
         try {

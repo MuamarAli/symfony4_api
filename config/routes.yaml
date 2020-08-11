@@ -2,3 +2,8 @@ api:
   prefix: /api
   resource: "@APIBundle/Resources/config/routing.yml"
 #  resource: "../src/APIBundle/Resources/config/routing.yml"
+
+user_register:
+  path: register
+  controller: App\APIBundle\Controller\UserController::createAction
+  methods: POST
