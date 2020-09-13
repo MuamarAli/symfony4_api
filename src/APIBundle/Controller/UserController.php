@@ -198,7 +198,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * Delete a user.
+     * Delete an user.
      *
      * @param int $id - user id.
      *

@@ -3,9 +3,7 @@
 namespace App\CoreBundle\Operation;
 
 use App\CoreBundle\Entity\{Article, User};
-use App\CoreBundle\Utils\DatabaseUtils;
-use App\CoreBundle\Utils\SlugUtils;
-use App\CoreBundle\Utils\ValidationUtils;
+use App\CoreBundle\Utils\{DatabaseUtils, SlugUtils, ValidationUtils};
 use Doctrine\ORM\EntityManagerInterface;
 
 /**

@@ -5,7 +5,6 @@ namespace App\CoreBundle\Manager;
 use App\CoreBundle\Entity\User;
 use App\CoreBundle\Operation\UserOperation;
 use App\CoreBundle\Utils\SerializerUtils;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
  * Class UserManager
