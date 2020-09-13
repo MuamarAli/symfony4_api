@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity
@@ -19,11 +20,18 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class User implements UserInterface, \Serializable
 {
     /**
+     * Defined serialize group in admin.
+     */
+    const ADMIN_GROUP = 'admin';
+
+    /**
      * Alias for user.
      */
     const ALIAS = 'u';
 
     /**
+     * @Groups({"admin"})
+     *
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
@@ -31,6 +39,8 @@ class User implements UserInterface, \Serializable
     private $id;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(type="string", unique=true, nullable=true)
@@ -38,6 +48,8 @@ class User implements UserInterface, \Serializable
      private $apiToken;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="username", type="string", length=50, unique=true)
@@ -52,6 +64,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "Your email must be 50 characters only."
      * )
      *
+     * @Groups({"admin", "public"})
+     *
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=50, unique=true)
@@ -59,6 +73,8 @@ class User implements UserInterface, \Serializable
     private $email;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="password", type="string", length=64)
@@ -66,6 +82,8 @@ class User implements UserInterface, \Serializable
     private $password;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean")
@@ -73,6 +91,8 @@ class User implements UserInterface, \Serializable
     private $isActive;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var array
      *
      * @ORM\Column(type="json_array")
@@ -87,6 +107,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "Your first name must be 50 characters only."
      * )
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="first_name", type="string", length=50)
@@ -96,6 +118,8 @@ class User implements UserInterface, \Serializable
     /**
      * @Assert\NotBlank()
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="middle_name", type="string", length=255)
@@ -104,6 +128,8 @@ class User implements UserInterface, \Serializable
 
     /**
      * @Assert\NotBlank()
+     *
+     * @Groups({"admin"})
      *
      * @var string
      *
@@ -119,6 +145,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "Your designation must be 50 characters only."
      * )
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="designation", type="string", length=50, nullable=true)
@@ -126,6 +154,8 @@ class User implements UserInterface, \Serializable
     private $designation;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var \DateTime
      *
      * @ORM\Column(name="started_at", type="date", nullable=true)
@@ -140,6 +170,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "Your location must be 50 characters only."
      * )
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="location", type="string", length=50, nullable=true)
@@ -152,6 +184,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "Your skype must be 50 characters only."
      * )
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="skype", type="string", length=50, nullable=true)
@@ -163,6 +197,8 @@ class User implements UserInterface, \Serializable
      *     max=50,
      *     maxMessage = "Your slack must be 50 characters only."
      * )
+     *
+     * @Groups({"admin"})
      *
      * @var string
      *
@@ -178,6 +214,8 @@ class User implements UserInterface, \Serializable
      *     maxMessage = "The description must be 500 characters only."
      * )
      *
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="description", type="text", nullable=true)
@@ -185,6 +223,8 @@ class User implements UserInterface, \Serializable
     private $description;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="avatar", type="text", nullable=true)
@@ -192,6 +232,8 @@ class User implements UserInterface, \Serializable
     private $avatar;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="hover_avatar", type="text", nullable=true)
@@ -199,6 +241,8 @@ class User implements UserInterface, \Serializable
     private $hoverAvatar;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
@@ -206,6 +250,8 @@ class User implements UserInterface, \Serializable
     private $createdAt;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
@@ -213,6 +259,8 @@ class User implements UserInterface, \Serializable
     private $updatedAt;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="slug", type="string", length=255, unique=true)
@@ -220,6 +268,8 @@ class User implements UserInterface, \Serializable
     private $slug;
 
     /**
+     * @Groups({"admin", "public"})
+     *
      * @ORM\OneToMany(targetEntity="Article", mappedBy="author")
      */
     private $articles;

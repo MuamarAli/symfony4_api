@@ -36,17 +36,22 @@ class SerializerUtils
     /**
      * Conversion of array object into json.
      *
-     * @param $data | object data.
+     * @param $data - object data.
+     * @param string $group - serialize group.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
      * @return string
      */
-    public function serialize($data)
+    public function serialize(
+        $data,
+        string $group
+    )
     {
         try {
-            $circular = [
+            $context = [
+                'groups' => [$group],
                 'circular_reference_handler' => function ($object) {
                     return $object->getId();
                 }
@@ -55,7 +60,7 @@ class SerializerUtils
             return $this->serializer->serialize(
                 $data,
                 self::RESPONSE_FORMAT,
-                $circular
+                $context
             );
         } catch (\Exception $e) {
             throw new \Exception(

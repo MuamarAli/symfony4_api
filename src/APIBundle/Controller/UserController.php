@@ -68,10 +68,11 @@ class UserController extends AbstractController
     {
         try {
             $response = $this->responseUtils->json(
-                $this->userManager->getAll())
-            ;
+                $this->userManager->getAll(),
+                User::ADMIN_GROUP
+            );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -103,10 +104,11 @@ class UserController extends AbstractController
                         User::class
                     )
                 ),
+                User::ADMIN_GROUP,
                 Response::HTTP_CREATED
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -132,10 +134,11 @@ class UserController extends AbstractController
     {
         try {
             $response = $this->responseUtils->json(
-                $this->userManager->getById($id)
+                $this->userManager->getById($id),
+                User::ADMIN_GROUP
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -182,10 +185,11 @@ class UserController extends AbstractController
                     ),
                     $oldName
                 ),
+                User::ADMIN_GROUP,
                 Response::HTTP_OK
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -212,9 +216,12 @@ class UserController extends AbstractController
         try {
             $this->userManager->delete($id);
 
-            $response = $this->responseUtils->json(Response::HTTP_NO_CONTENT);
+            $response = $this->responseUtils->json(
+                User::ADMIN_GROUP,
+                Response::HTTP_NO_CONTENT
+            );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE

@@ -1,0 +1,4 @@
+blog_list:
+  path: blogs
+  controller: App\BlogBundle\Controller\BlogController::indexAction
+  methods: GET

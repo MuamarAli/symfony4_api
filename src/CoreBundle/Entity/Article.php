@@ -5,6 +5,7 @@ namespace App\CoreBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity
@@ -16,11 +17,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Article
 {
     /**
+     * Defined serialize group in public.
+     */
+    const PUBLIC_GROUP = 'public';
+
+    /**
+     * Defined serialize group in admin.
+     */
+    const ADMIN_GROUP = 'admin';
+
+    /**
      * Alias for article.
      */
     const ALIAS = 'a';
 
     /**
+     * @Groups({"admin", "public"})
+     *
      * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
@@ -29,6 +42,8 @@ class Article
 
     /**
      * @Assert\NotBlank()
+     *
+     * @Groups({"admin"})
      *
      * @var string
      *
@@ -39,12 +54,19 @@ class Article
     /**
      * @Assert\NotBlank()
      *
+     *
+     * @Groups({"admin", "public"})
+     *
+     * @var string
+     *
      * @ORM\Column(name="title", type="string", length=255)
      */
     private $title;
 
     /**
      * @Assert\NotBlank()
+     *
+     * @Groups({"admin", "public"})
      *
      * @var string
      *
@@ -55,11 +77,17 @@ class Article
     /**
      * @Assert\NotBlank()
      *
+     * @Groups({"admin", "public"})
+     *
+     * @var string
+     *
      * @ORM\Column(name="content", type="text")
      */
     private $content;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="status", type="string", length=255, nullable=true)
@@ -67,6 +95,8 @@ class Article
     private $status;
 
     /**
+     * @Groups({"admin", "public"})
+     *
      * @var string
      *
      * @ORM\Column(name="thumbnail", type="text", nullable=true)
@@ -74,6 +104,8 @@ class Article
     private $thumbnail;
 
     /**
+     * @Groups({"admin", "public"})
+     *
      * @var string
      *
      * @ORM\Column(name="banner", type="text", nullable=true)
@@ -81,16 +113,26 @@ class Article
     private $banner;
 
     /**
+     * @Groups({"admin"})
+     *
+     * @var \DateTime
+     *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      */
     private $createdAt;
 
     /**
+     * @Groups({"admin"})
+     *
+     * @var \DateTime
+     *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     private $updatedAt;
 
     /**
+     * @Groups({"admin"})
+     *
      * @var string
      *
      * @ORM\Column(name="slug", type="string", length=255, unique=true)
@@ -98,6 +140,8 @@ class Article
     private $slug;
 
     /**
+     * @Groups({"admin", "public"})
+     *
      * @ORM\ManyToOne(targetEntity="User", inversedBy="articles")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */

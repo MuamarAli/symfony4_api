@@ -68,10 +68,11 @@ class ArticleController extends AbstractController
     {
         try {
             $response = $this->responseUtils->json(
-                $this->articleManager->getAll()
+                $this->articleManager->getAll(),
+                Article::ADMIN_GROUP
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -104,10 +105,11 @@ class ArticleController extends AbstractController
                     ),
                     $this->getUser()
                 ),
+                Article::ADMIN_GROUP,
                 Response::HTTP_CREATED
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -133,10 +135,11 @@ class ArticleController extends AbstractController
     {
         try {
             $response = $this->responseUtils->json(
-                $this->articleManager->getById($id)
+                $this->articleManager->getById($id),
+                Article::ADMIN_GROUP
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -178,10 +181,11 @@ class ArticleController extends AbstractController
                     ),
                     $oldTitle
                 ),
+                Article::ADMIN_GROUP,
                 Response::HTTP_OK
             );
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'message' => self::CATCH_ERROR_MESSAGE
@@ -208,9 +212,12 @@ class ArticleController extends AbstractController
         try {
             $this->articleManager->delete($id);
 
-            $response = $this->responseUtils->json(Response::HTTP_NO_CONTENT);
+            $response = $this->responseUtils->json(
+                Article::ADMIN_GROUP,
+                Response::HTTP_NO_CONTENT)
+            ;
         } catch (\Exception $e) {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
                     'errors' => self::CATCH_ERROR_MESSAGE

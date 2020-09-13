@@ -29,9 +29,10 @@ class ResponseUtils
     /**
      * Return json serialize object.
      *
-     * @param $data | object.
-     * @param int $status | status code.
-     * @param array $headers | optional headers.
+     * @param $data - object.
+     * @param string $group - serialize group.
+     * @param int $status - status code.
+     * @param array $headers - optional headers.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -40,12 +41,13 @@ class ResponseUtils
      */
     public function json(
         $data,
+        string $group,
         int $status = 200,
         array $headers = []
     ): JsonResponse
     {
         return new JsonResponse(
-            $this->serializerUtils->serialize($data),
+            $this->serializerUtils->serialize($data, $group),
             $status,
             $headers,
             true
