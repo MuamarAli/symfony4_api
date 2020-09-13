@@ -2,9 +2,12 @@
 
 namespace App\APIBundle\Controller;
 
+use App\CoreBundle\Entity\User;
 use App\CoreBundle\Manager\UserManager;
+use App\CoreBundle\Utils\{ResponseUtils, SerializerUtils};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
  * Class UserController
@@ -26,13 +29,31 @@ class UserController extends AbstractController
     private $userManager;
 
     /**
+     * @var ResponseUtils
+     */
+    private $responseUtils;
+
+    /**
+     * @var SerializerUtils
+     */
+    private $serializerUtils;
+
+    /**
      * UsersController constructor.
      *
      * @param UserManager $userManager
+     * @param ResponseUtils $responseUtils
+     * @param SerializerUtils $serializerUtils
      */
-    public function __construct(UserManager $userManager)
+    public function __construct(
+        UserManager $userManager,
+        ResponseUtils $responseUtils,
+        SerializerUtils $serializerUtils
+    )
     {
         $this->userManager = $userManager;
+        $this->responseUtils = $responseUtils;
+        $this->serializerUtils = $serializerUtils;
     }
 
     /**
@@ -41,12 +62,12 @@ class UserController extends AbstractController
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function indexAction(): Response
+    public function indexAction(): JsonResponse
     {
         try {
-            $response = $this->response(
+            $response = $this->responseUtils->json(
                 $this->userManager->getAll())
             ;
         } catch (\Exception $e) {
@@ -65,7 +86,7 @@ class UserController extends AbstractController
     /**
      * Create User.
      *
-     * @param Request $request | handle the request methods.
+     * @param Request $request - handle the request methods.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -76,7 +97,12 @@ class UserController extends AbstractController
     {
         try {
             $response = $this->json(
-                $this->userManager->create($request->getContent()),
+                $this->userManager->create(
+                    $this->serializerUtils->deserialize(
+                        $request->getContent(),
+                        User::class
+                    )
+                ),
                 Response::HTTP_CREATED
             );
         } catch (\Exception $e) {
@@ -95,17 +121,17 @@ class UserController extends AbstractController
     /**
      * Get and display single user.
      *
-     * @param int $id | user id.
+     * @param int $id - user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function getAction(int $id): Response
+    public function getAction(int $id): JsonResponse
     {
         try {
-            $response = $this->response(
+            $response = $this->responseUtils->json(
                 $this->userManager->getById($id)
             );
         } catch (\Exception $e) {
@@ -124,8 +150,8 @@ class UserController extends AbstractController
     /**
      * Update the user information.
      *
-     * @param Request $request | handle the request methods.
-     * @param int $id | user id.
+     * @param Request $request - handle the request methods.
+     * @param int $id - user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -138,13 +164,24 @@ class UserController extends AbstractController
     ): JsonResponse
     {
         try {
-            $updateUser = $this->userManager->update(
-                $request->getContent(),
-                $id
+            $user = $this->userManager->getById($id);
+
+            $oldName = sprintf(
+                '%s %s %s',
+                $user->getFirstName(),
+                $user->getMiddleName(),
+                $user->getLastName()
             );
 
-            $response = $this->json(
-                $updateUser,
+            $response = $this->responseUtils->json(
+                $this->userManager->update(
+                    $this->serializerUtils->deserialize(
+                        $request->getContent(),
+                        User::class,
+                        [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
+                    ),
+                    $oldName
+                ),
                 Response::HTTP_OK
             );
         } catch (\Exception $e) {
@@ -163,7 +200,7 @@ class UserController extends AbstractController
     /**
      * Delete a user.
      *
-     * @param int $id | user id.
+     * @param int $id - user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -175,7 +212,7 @@ class UserController extends AbstractController
         try {
             $this->userManager->delete($id);
 
-            $response = $this->json(Response::HTTP_NO_CONTENT);
+            $response = $this->responseUtils->json(Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             $response = $this->json(
                 [
@@ -187,21 +224,5 @@ class UserController extends AbstractController
         }
 
         return $response;
-    }
-
-    /**
-     * Return serialize data.
-     *
-     * @param $data | serialized array or object
-     *
-     * @return Response
-     */
-    public function response($data)
-    {
-        return new Response(
-            $data,
-            Response::HTTP_OK,
-            ['Content-type' => 'application/json']
-        );
     }
 }

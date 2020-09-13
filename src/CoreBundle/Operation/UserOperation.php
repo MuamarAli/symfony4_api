@@ -3,9 +3,7 @@
 namespace App\CoreBundle\Operation;
 
 use App\CoreBundle\Entity\User;
-use App\CoreBundle\Utils\DatabaseUtils;
-use App\CoreBundle\Utils\SlugUtils;
-use App\CoreBundle\Utils\TokenUtils;
+use App\CoreBundle\Utils\{DatabaseUtils, SlugUtils, TokenUtils, ValidationUtils};
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -44,6 +42,11 @@ class UserOperation
     private $tokenUtils;
 
     /**
+     * @var ValidationUtils
+     */
+    private $validatorUtils;
+
+    /**
      * @var UserPasswordEncoderInterface
      */
     private $passwordEncoder;
@@ -56,13 +59,15 @@ class UserOperation
      * @param SlugUtils $slugUtils
      * @param UserPasswordEncoderInterface $passwordEncoder
      * @param TokenUtils $tokenUtils
+     * @param ValidationUtils $validatorUtils
      */
     public function __construct(
         EntityManagerInterface $em,
         DatabaseUtils $databaseUtils,
         SlugUtils $slugUtils,
         UserPasswordEncoderInterface $passwordEncoder,
-        TokenUtils $tokenUtils
+        TokenUtils $tokenUtils,
+        ValidationUtils $validatorUtils
     )
     {
         $this->em = $em;
@@ -70,6 +75,7 @@ class UserOperation
         $this->slugUtils = $slugUtils;
         $this->passwordEncoder = $passwordEncoder;
         $this->tokenUtils = $tokenUtils;
+        $this->validatorUtils = $validatorUtils;
     }
 
     /**
@@ -125,7 +131,7 @@ class UserOperation
     /**
      * Update user data.
      *
-     * @param string $oldName | old full name.
+     * @param string $oldName - old full name.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -172,7 +178,7 @@ class UserOperation
     /**
      * Retrieve user.
      *
-     * @param int $id | user id.
+     * @param int $id - user id.
      *
      * @author Ali, Muamar
      *
@@ -206,13 +212,11 @@ class UserOperation
             throw new \Exception('The slug can\'t be created, no name found.');
         } else {
             try {
-                $this
-                    ->slugUtils
-                    ->checkSlug(
-                        $fullName,
-                        $this->user,
-                        User::class
-                    );
+                $this->slugUtils->checkSlug(
+                    $fullName,
+                    $this->user,
+                    User::class
+                );
             } catch (\Exception $e) {
                 throw new \Exception('An error occurred at the operation, in creating the slug.');
             }
@@ -256,12 +260,15 @@ class UserOperation
     public function encryptPassword(): UserOperation
     {
         try {
-            $userPassword = $this->user->getPassword();
-
-            if (empty($userPassword)) {
+            if (empty($userPassword = $this->user->getPassword())) {
                 throw new \Exception('Password is empty.');
             } else {
-                $password = $this->passwordEncoder->encodePassword($this->user, $userPassword, null);
+                $password = $this->passwordEncoder->encodePassword(
+                    $this->user,
+                    $userPassword,
+                    null
+                );
+
                 $this->user->setPassword($password);
             }
         } catch (\Exception $e) {
@@ -297,6 +304,29 @@ class UserOperation
         }
 
         return $this;
+    }
+
+    /**
+     * Validate the user entity attributes.
+     *
+     * @param $user
+     *
+     * @throws \Exception
+     * @author Ali, Muamar
+     *
+     * @return array|null
+     */
+    public function validate($user)
+    {
+        try {
+            if ($validate = $this->validatorUtils->validate($user)) {
+                return $validate;
+            }
+        } catch (\Exception $e) {
+            throw new \Exception(
+                'An error occurred at the operation, checking validation of user.'
+            );
+        }
     }
 
     /**

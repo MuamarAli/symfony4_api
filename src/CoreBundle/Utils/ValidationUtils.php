@@ -36,22 +36,19 @@ class ValidationUtils
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return null
+     * @return array|null
      */
-    public function validate($entity)
+    public function validate($entity): ?array
     {
         try {
             $entityErrors = $this->validator->validate($entity);
+            $errors = [];
 
-            if (count($entityErrors) > 0) {
-                $errors = null;
-
-                foreach ($entityErrors as $error) {
-                    $errors[$error->getPropertyPath()] = $error->getMessage();
-                }
-
-                return $errors;
+            foreach ($entityErrors as $error) {
+                $errors[$error->getPropertyPath()] = $error->getMessage();
             }
+
+            return $errors;
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the validation utils, checking validation of entity.'

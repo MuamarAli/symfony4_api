@@ -98,6 +98,12 @@ class Article
     private $slug;
 
     /**
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="articles")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     */
+    private $author;
+
+    /**
      * Get id.
      *
      * @return int
@@ -345,6 +351,30 @@ class Article
     public function getSlug(): ?string
     {
         return $this->slug;
+    }
+
+    /**
+     * Get author.
+     *
+     * @return User
+     */
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    /**
+     * Set Author.
+     *
+     * @param User $author
+     *
+     * @return Article
+     */
+    public function setAuthor(User $author)
+    {
+        $this->author = $author;
+
+        return $this;
     }
 
     /**

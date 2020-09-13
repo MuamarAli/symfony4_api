@@ -4,7 +4,7 @@ namespace App\CoreBundle\Manager;
 
 use App\CoreBundle\Entity\User;
 use App\CoreBundle\Operation\UserOperation;
-use App\CoreBundle\Utils\{SerializerUtils, ValidationUtils};
+use App\CoreBundle\Utils\SerializerUtils;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
@@ -22,11 +22,6 @@ class UserManager
     private $userOperation;
 
     /**
-     * @var ValidationUtils
-     */
-    private $validatorUtils;
-
-    /**
      * @var SerializerUtils
      */
     private $serializerUtils;
@@ -35,17 +30,14 @@ class UserManager
      * UserManager constructor.
      *
      * @param UserOperation $userOperation
-     * @param ValidationUtils $validatorUtils
      * @param SerializerUtils $serializerUtils
      */
     public function __construct(
         UserOperation $userOperation,
-        ValidationUtils $validatorUtils,
         SerializerUtils $serializerUtils
     )
     {
         $this->userOperation = $userOperation;
-        $this->validatorUtils = $validatorUtils;
         $this->serializerUtils = $serializerUtils;
     }
 
@@ -55,14 +47,12 @@ class UserManager
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return
+     * @return array|null
      */
-    public function getAll()
+    public function getAll(): ?array
     {
         try {
-            return $this->serializerUtils->serialize(
-                $this->userOperation->getAll()
-            );
+            return $this->userOperation->getAll();
         } catch (\Exception $e) {
             throw new \Exception('An error occurred at the manager, getting all the user.');
         }
@@ -71,20 +61,20 @@ class UserManager
     /**
      * Retrieve user.
      *
-     * @param int $id | user id.
+     * @param int $id - user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return
+     * @return User|null
      */
-    public function getById(int $id)
+    public function getById(int $id): ?User
     {
         try {
             if (empty($user = $this->userOperation->getById($id))) {
                 throw new \Exception ('User does not exist.');
             } else {
-                $result = $this->serializerUtils->serialize($user);
+                $result = $user;
             }
         } catch (\Exception $e) {
             throw new \Exception('An error occurred at the manager, getting user.');
@@ -96,22 +86,17 @@ class UserManager
     /**
      * Create user.
      *
-     * @param string $content | content.
+     * @param User $user - entity.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return User|null
+     * @return User|array|null
      */
-    public function create(string $content)
+    public function create(User $user)
     {
         try {
-            $user = $this->serializerUtils->deserialize(
-                $content,
-                User::class
-            );
-
-            if ($errors = $this->validate($user)) {
+            if ($errors = $this->userOperation->validate($user)) {
                 $result = $errors;
             } else {
                 $result = $this
@@ -136,36 +121,21 @@ class UserManager
     /**
      * Update user.
      *
-     * @param string $content | request method.
-     * @param int $id | user id.
+     * @param User $updateUser - entity.
+     * @param string $oldName - old name.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return User|null
+     * @return User|array|null
      */
     public function update(
-        string $content,
-        int $id
+        User $updateUser,
+        string $oldName
     )
     {
         try {
-            $user = $this->getById($id);
-
-            $oldName = sprintf(
-                '%s %s %s',
-                $user->getFirstName(),
-                $user->getMiddleName(),
-                $user->getLastName()
-            );
-
-            $updateUser = $this->serializerUtils->deserialize(
-                $content,
-                User::class,
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
-            );
-
-            if ($errors = $this->validate($user)) {
+            if ($errors = $this->userOperation->validate($updateUser)) {
                 $result = $errors;
             } else {
                 $result = $this
@@ -187,7 +157,7 @@ class UserManager
     /**
      * Delete user.
      *
-     * @param int $id | user id.
+     * @param int $id - user id.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -204,29 +174,6 @@ class UserManager
         } catch (\Exception $e) {
             throw new \Exception(
                 'An error occurred at the manager, deletion of user.'
-            );
-        }
-    }
-
-    /**
-     * Validate the user entity attributes,
-     *
-     * @param User $user | user entity.
-     *
-     * @throws \Exception
-     * @author Ali, Muamar
-     *
-     * @return null
-     */
-    public function validate(User $user)
-    {
-        try {
-            if ($validate = $this->validatorUtils->validate($user)) {
-                return $validate;
-            }
-        } catch (\Exception $e) {
-            throw new \Exception(
-                'An error occurred at the manager, checking validation of user.'
             );
         }
     }

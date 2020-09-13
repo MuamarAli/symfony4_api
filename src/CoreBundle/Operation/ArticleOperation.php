@@ -5,6 +5,7 @@ namespace App\CoreBundle\Operation;
 use App\CoreBundle\Entity\{Article, User};
 use App\CoreBundle\Utils\DatabaseUtils;
 use App\CoreBundle\Utils\SlugUtils;
+use App\CoreBundle\Utils\ValidationUtils;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -37,21 +38,29 @@ class ArticleOperation
     private $slugUtils;
 
     /**
+     * @var ValidationUtils
+     */
+    private $validatorUtils;
+
+    /**
      * ArticleOperation constructor.
      *
      * @param EntityManagerInterface $em
      * @param DatabaseUtils $databaseUtils
      * @param SlugUtils $slugUtils
+     * @param ValidationUtils $validatorUtils
      */
     public function __construct(
         EntityManagerInterface $em,
         DatabaseUtils $databaseUtils,
-        SlugUtils $slugUtils
+        SlugUtils $slugUtils,
+        ValidationUtils $validatorUtils
     )
     {
         $this->em = $em;
         $this->databaseUtils = $databaseUtils;
         $this->slugUtils = $slugUtils;
+        $this->validatorUtils = $validatorUtils;
     }
 
     /**
@@ -85,7 +94,7 @@ class ArticleOperation
     /**
      * Assigning of author.
      *
-     * @param User $author | article author.
+     * @param User $author - article author.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -106,12 +115,12 @@ class ArticleOperation
     /**
      * Update user data.
      *
-     * @param string $oldTitle | old title.
+     * @param string $oldTitle - old title.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return
+     * @return ArticleOperation
      */
     public function update(string $oldTitle): ArticleOperation
     {
@@ -149,13 +158,13 @@ class ArticleOperation
     /**
      * Retrieve article.
      *
-     * @param string $id | article id.
+     * @param int $id - article id.
      *
      * @author Ali, Muamar
      *
      * @return Article|null
      */
-    public function getById(string $id): ?Article
+    public function getById(int $id): ?Article
     {
         try {
             $article = $this
@@ -196,6 +205,29 @@ class ArticleOperation
         }
 
         return $this;
+    }
+
+    /**
+     * Validate the article entity attributes.
+     *
+     * @param $article
+     *
+     * @throws \Exception
+     * @author Ali, Muamar
+     *
+     * @return array|null
+     */
+    public function validate($article)
+    {
+        try {
+            if ($validate = $this->validatorUtils->validate($article)) {
+                return $validate;
+            }
+        } catch (\Exception $e) {
+            throw new \Exception(
+                'An error occurred at the operation, checking validation of article.'
+            );
+        }
     }
 
     /**

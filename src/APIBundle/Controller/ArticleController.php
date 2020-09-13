@@ -2,9 +2,12 @@
 
 namespace App\APIBundle\Controller;
 
+use App\CoreBundle\Entity\Article;
 use App\CoreBundle\Manager\ArticleManager;
+use App\CoreBundle\Utils\{ResponseUtils, SerializerUtils};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
  * Class ArticleController
@@ -16,18 +19,41 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 class ArticleController extends AbstractController
 {
     /**
+     * Error message in the try catch.
+     */
+    const CATCH_ERROR_MESSAGE = 'Oops! Something went wrong! Please contact our PHP Development Team.';
+    
+    /**
      * @var ArticleManager
      */
     private $articleManager;
 
     /**
+     * @var ResponseUtils
+     */
+    private $responseUtils;
+
+    /**
+     * @var SerializerUtils
+     */
+    private $serializerUtils;
+
+    /**
      * UsersController constructor.
      *
      * @param ArticleManager $articleManager
+     * @param ResponseUtils $responseUtils
+     * @param SerializerUtils $serializerUtils
      */
-    public function __construct(ArticleManager $articleManager)
+    public function __construct(
+        ArticleManager $articleManager,
+        ResponseUtils $responseUtils,
+        SerializerUtils $serializerUtils
+    )
     {
         $this->articleManager = $articleManager;
+        $this->responseUtils = $responseUtils;
+        $this->serializerUtils = $serializerUtils;
     }
 
     /**
@@ -36,19 +62,19 @@ class ArticleController extends AbstractController
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function indexAction(): Response
+    public function indexAction(): JsonResponse
     {
         try {
-            $response = $this->response(
+            $response = $this->responseUtils->json(
                 $this->articleManager->getAll()
             );
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
@@ -60,7 +86,7 @@ class ArticleController extends AbstractController
     /**
      * Create Article.
      *
-     * @param Request $request | handle the request methods.
+     * @param Request $request - handle the request methods.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -70,9 +96,12 @@ class ArticleController extends AbstractController
     public function createAction(Request $request): JsonResponse
     {
         try {
-            $response = $this->json(
+            $response = $this->responseUtils->json(
                 $this->articleManager->create(
-                    $request->getContent(),
+                    $this->serializerUtils->deserialize(
+                        $request->getContent(),
+                        Article::class
+                    ),
                     $this->getUser()
                 ),
                 Response::HTTP_CREATED
@@ -81,7 +110,7 @@ class ArticleController extends AbstractController
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -93,24 +122,24 @@ class ArticleController extends AbstractController
     /**
      * Get and display single article.
      *
-     * @param string $id | article id.
+     * @param int $id - article id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function getAction(string $id): Response
+    public function getAction(int $id): JsonResponse
     {
         try {
-            $response = $this->response(
+            $response = $this->responseUtils->json(
                 $this->articleManager->getById($id)
             );
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -122,8 +151,8 @@ class ArticleController extends AbstractController
     /**
      * Update the article information.
      *
-     * @param Request $request | handle the request methods.
-     * @param string $id | article slug id.
+     * @param Request $request - handle the request methods.
+     * @param string $id - article slug id.
      *
      * @throws \Exception
      * @author Ali, Muamar
@@ -136,21 +165,26 @@ class ArticleController extends AbstractController
     ): JsonResponse
     {
         try {
+            $article = $this->articleManager->getById($id);
 
-            $updateUser = $this->articleManager->update(
-                $request->getContent(),
-                $id
-            );
+            $oldTitle = $article->getTitle();
 
-            $response = $this->json(
-                $updateUser,
+            $response = $this->responseUtils->json(
+                $this->articleManager->update(
+                    $this->serializerUtils->deserialize(
+                        $request->getContent(),
+                        Article::class,
+                        [AbstractNormalizer::OBJECT_TO_POPULATE => $article]
+                    ),
+                    $oldTitle
+                ),
                 Response::HTTP_OK
             );
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'message' => $e->getMessage()
+                    'message' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
@@ -162,45 +196,29 @@ class ArticleController extends AbstractController
     /**
      * Delete an article.
      *
-     * @param string $id | article slug id.
+     * @param int $id - article id.
      *
      * @throws \Exception
      * @author Ali, Muamar
      *
      * @return JsonResponse
      */
-    public function deleteAction(string $id): JsonResponse
+    public function deleteAction(int $id): JsonResponse
     {
         try {
             $this->articleManager->delete($id);
 
-            $response = $this->json(Response::HTTP_NO_CONTENT);
+            $response = $this->responseUtils->json(Response::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             $response = $this->json(
                 [
                     'status' => Response::HTTP_BAD_REQUEST,
-                    'errors' => $e->getMessage()
+                    'errors' => self::CATCH_ERROR_MESSAGE
                 ],
                 Response::HTTP_BAD_REQUEST
             );
         }
 
         return $response;
-    }
-
-    /**
-     * Return serialize data.
-     *
-     * @param $data | serialized array or object
-     *
-     * @return Response
-     */
-    public function response($data)
-    {
-        return new Response(
-            $data,
-            Response::HTTP_OK,
-            ['Content-type' => 'application/json']
-        );
     }
 }

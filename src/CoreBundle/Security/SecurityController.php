@@ -29,7 +29,7 @@ class SecurityController extends AbstractController
 
         return new JsonResponse(
             [
-//                'apiToken' => $user->getApiToken(),
+                'apiToken' => $user->getApiToken(),
                 'roles' => $user->getRoles(),
                 'email' => $user->getEmail(),
             ],
