@@ -1,3 +1,60 @@
-default:
-  path: default
-  controller: App\APIBundle\Controller\DefaultController::indexAction
+login_check:
+  path: login
+  controller: App\CoreBundle\Security\SecurityController::loginAction
+  methods: POST
+
+logout:
+  path: logout
+  controller: App\CoreBundle\Security\SecurityController::logoutAction
+  methods: POST
+
+user_list:
+  path: users
+  controller: App\APIBundle\Controller\UserController::indexAction
+  methods: GET
+
+user_create:
+  path: users
+  controller: App\APIBundle\Controller\UserController::createAction
+  methods: POST
+
+user_get:
+  path: users/{id}
+  controller: App\APIBundle\Controller\UserController::getAction
+  methods: GET
+
+user_update:
+  path: users/{id}
+  controller: App\APIBundle\Controller\UserController::updateAction
+  methods: PUT
+
+user_delete:
+  path: users/{id}
+  controller: App\APIBundle\Controller\UserController::deleteAction
+  methods: DELETE
+
+# Article
+article_list:
+  path: articles
+  controller: App\APIBundle\Controller\ArticleController::indexAction
+  methods: GET
+
+article_create:
+  path: articles
+  controller: App\APIBundle\Controller\ArticleController::createAction
+  methods: POST
+
+article_read:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::getAction
+  methods: GET
+
+article_update:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::updateAction
+  methods: PUT
+
+article_delete:
+  path: articles/{id}
+  controller: App\APIBundle\Controller\ArticleController::deleteAction
+  methods: DELETE
